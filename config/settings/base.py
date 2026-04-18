@@ -69,8 +69,24 @@ DATABASES = {
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "sqlearn"),
         "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
-    }
+    },
+    # Separate connection used exclusively for executing user SQL in per-user
+    # schemas. Defaults to the same credentials so local dev works without
+    # extra setup; production should point this at the restricted
+    # ``sqlearn_sandbox`` role that has no access to app tables.
+    "sandbox": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("SANDBOX_DB_NAME", os.getenv("POSTGRES_DB", "sqlearn")),
+        "USER": os.getenv("SANDBOX_DB_USER", os.getenv("POSTGRES_USER", "sqlearn")),
+        "PASSWORD": os.getenv(
+            "SANDBOX_DB_PASSWORD", os.getenv("POSTGRES_PASSWORD", "sqlearn")
+        ),
+        "HOST": os.getenv("SANDBOX_DB_HOST", os.getenv("POSTGRES_HOST", "db")),
+        "PORT": os.getenv("SANDBOX_DB_PORT", os.getenv("POSTGRES_PORT", "5432")),
+    },
 }
+
+DATABASE_ROUTERS = ["apps.sandbox.routers.SandboxDatabaseRouter"]
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "apps.authentication.validators.ComplexityValidator"},
