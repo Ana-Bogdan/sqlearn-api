@@ -26,6 +26,9 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.health",
     "apps.authentication",
+    "apps.curriculum",
+    "apps.sandbox",
+    "apps.progress",
 ]
 
 MIDDLEWARE = [
