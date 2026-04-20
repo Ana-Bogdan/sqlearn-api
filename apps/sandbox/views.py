@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.curriculum.models import Exercise
+from apps.gamification.signals import dispatch_exercise_completed
 from apps.progress.models import (
     ExerciseStatus,
     QuerySubmission,
@@ -70,6 +71,7 @@ class ExerciseSubmitView(APIView):
             user=user, exercise=exercise
         )
 
+        gamification_result = None
         if context.is_correct:
             if progress.status != ExerciseStatus.COMPLETED:
                 progress.status = ExerciseStatus.COMPLETED
@@ -83,20 +85,23 @@ class ExerciseSubmitView(APIView):
                         "updated_at",
                     ]
                 )
+                gamification_result = dispatch_exercise_completed(
+                    user=user, exercise=exercise, progress=progress
+                )
         else:
             if progress.status == ExerciseStatus.NOT_STARTED:
                 progress.status = ExerciseStatus.ATTEMPTED
                 progress.save(update_fields=["status", "updated_at"])
 
-        return Response(
-            {
-                **outcome,
-                "user_status": progress.status,
-                "was_first_attempt": bool(
-                    context.is_correct
-                    and progress.status == ExerciseStatus.COMPLETED
-                    and progress.first_attempt
-                ),
-                "submission_count": prior_submission_count + 1,
-            }
-        )
+        response = {
+            **outcome,
+            "user_status": progress.status,
+            "was_first_attempt": bool(
+                context.is_correct
+                and progress.status == ExerciseStatus.COMPLETED
+                and progress.first_attempt
+            ),
+            "submission_count": prior_submission_count + 1,
+            "gamification": gamification_result,
+        }
+        return Response(response)

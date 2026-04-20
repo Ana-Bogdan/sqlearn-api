@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/auth/", include("apps.authentication.urls")),
     path("api/", include("apps.curriculum.urls")),
     path("api/", include("apps.sandbox.urls")),
+    path("api/", include("apps.gamification.urls")),
 ]
