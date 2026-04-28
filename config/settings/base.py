@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "apps.sandbox",
     "apps.progress",
     "apps.gamification",
+    "apps.mentor",
 ]
 
 MIDDLEWARE = [
@@ -148,4 +149,17 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@sqlearn.local")
 PASSWORD_RESET_URL_TEMPLATE = os.getenv(
     "PASSWORD_RESET_URL_TEMPLATE",
     "http://localhost:3000/reset-password/{uid}/{token}",
+)
+
+# AI Mentor (Gemini)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+AI_MENTOR_MODEL = os.getenv("AI_MENTOR_MODEL", "gemini-flash-latest")
+AI_MENTOR_RATE_LIMIT_PER_HOUR = int(os.getenv("AI_MENTOR_RATE_LIMIT_PER_HOUR", "10"))
+AI_MENTOR_HINTS_PER_EXERCISE = int(os.getenv("AI_MENTOR_HINTS_PER_EXERCISE", "3"))
+AI_MENTOR_TIMEOUT_SECONDS = int(os.getenv("AI_MENTOR_TIMEOUT_SECONDS", "30"))
+# How many times to retry transient Gemini errors (503 / UNAVAILABLE /
+# RESOURCE_EXHAUSTED) before giving up. Backoff is 0.5s, 1.5s, 3s.
+AI_MENTOR_MAX_RETRIES = int(os.getenv("AI_MENTOR_MAX_RETRIES", "3"))
+AI_MENTOR_FALLBACK_MESSAGE = (
+    "AI Mentor is temporarily unavailable. Try the static hints in the meantime."
 )
