@@ -22,9 +22,23 @@ User = get_user_model()
 # ---------------------------------------------------------------------------
 
 
+class AdminChapterLessonSummarySerializer(serializers.ModelSerializer):
+    """Lightweight lesson representation nested under a chapter."""
+
+    exercise_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ("id", "title", "order", "is_active", "exercise_count")
+
+    def get_exercise_count(self, lesson: Lesson) -> int:
+        return lesson.exercises.count()
+
+
 class AdminChapterSerializer(serializers.ModelSerializer):
     lesson_count = serializers.SerializerMethodField()
     exercise_count = serializers.SerializerMethodField()
+    lessons = serializers.SerializerMethodField()
 
     class Meta:
         model = Chapter
@@ -36,6 +50,7 @@ class AdminChapterSerializer(serializers.ModelSerializer):
             "is_active",
             "lesson_count",
             "exercise_count",
+            "lessons",
             "created_at",
             "updated_at",
         )
@@ -46,6 +61,10 @@ class AdminChapterSerializer(serializers.ModelSerializer):
 
     def get_exercise_count(self, chapter: Chapter) -> int:
         return chapter.exercises.filter(is_active=True).count()
+
+    def get_lessons(self, chapter: Chapter) -> list[dict]:
+        lessons = chapter.lessons.all().order_by("order", "id")
+        return AdminChapterLessonSummarySerializer(lessons, many=True).data
 
 
 class AdminChapterReorderSerializer(serializers.Serializer):
@@ -65,26 +84,50 @@ class AdminChapterReorderSerializer(serializers.Serializer):
 # ---------------------------------------------------------------------------
 
 
+class AdminLessonExerciseSummarySerializer(serializers.ModelSerializer):
+    """Lightweight exercise representation nested under a lesson."""
+
+    class Meta:
+        model = Exercise
+        fields = (
+            "id",
+            "title",
+            "order",
+            "difficulty",
+            "is_chapter_quiz",
+            "is_published",
+            "is_active",
+        )
+
+
 class AdminLessonSerializer(serializers.ModelSerializer):
     exercise_count = serializers.SerializerMethodField()
+    exercises = serializers.SerializerMethodField()
+    chapter_title = serializers.CharField(source="chapter.title", read_only=True)
 
     class Meta:
         model = Lesson
         fields = (
             "id",
             "chapter",
+            "chapter_title",
             "title",
             "theory_content",
             "order",
             "is_active",
             "exercise_count",
+            "exercises",
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "chapter_title", "created_at", "updated_at")
 
     def get_exercise_count(self, lesson: Lesson) -> int:
         return lesson.exercises.filter(is_active=True).count()
+
+    def get_exercises(self, lesson: Lesson) -> list[dict]:
+        exercises = lesson.exercises.all().order_by("order", "id")
+        return AdminLessonExerciseSummarySerializer(exercises, many=True).data
 
 
 # ---------------------------------------------------------------------------
@@ -126,13 +169,17 @@ class AdminExerciseSerializer(serializers.ModelSerializer):
     difficulty = serializers.ChoiceField(
         choices=Difficulty.choices, default=Difficulty.EASY
     )
+    chapter_title = serializers.CharField(source="chapter.title", read_only=True)
+    lesson_title = serializers.CharField(source="lesson.title", read_only=True)
 
     class Meta:
         model = Exercise
         fields = (
             "id",
             "chapter",
+            "chapter_title",
             "lesson",
+            "lesson_title",
             "title",
             "instructions",
             "difficulty",
@@ -149,7 +196,14 @@ class AdminExerciseSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "created_at", "updated_at", "datasets")
+        read_only_fields = (
+            "id",
+            "chapter_title",
+            "lesson_title",
+            "created_at",
+            "updated_at",
+            "datasets",
+        )
 
     def validate(self, attrs):
         chapter = attrs.get("chapter") or getattr(self.instance, "chapter", None)
