@@ -12,9 +12,15 @@ from .pipeline import (
     SubmissionContext,
     SyntaxCheckHandler,
 )
-from .sandbox_service import SandboxService
+from .sandbox_service import (
+    ColumnInfo,
+    SandboxNotConfigured,
+    SandboxService,
+    TableInfo,
+)
 
 __all__ = [
+    "ColumnInfo",
     "ExecutionHandler",
     "ForbiddenOperationHandler",
     "QueryExecutionError",
@@ -23,7 +29,9 @@ __all__ = [
     "QueryTimeout",
     "QueryValidationPipeline",
     "ResultComparisonHandler",
+    "SandboxNotConfigured",
     "SandboxService",
     "SubmissionContext",
     "SyntaxCheckHandler",
+    "TableInfo",
 ]

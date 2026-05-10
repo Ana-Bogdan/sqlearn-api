@@ -186,6 +186,27 @@ class FunBadgeChecker(BadgeChecker):
         return earned
 
 
+class SandboxBadgeChecker(BadgeChecker):
+    """Awards badges earned by activity in the free Sandbox.
+
+    The only badge in this category today is **Sandbox Explorer** (run 20
+    queries in the playground). The checker counts ``SandboxQueryAttempt``
+    rows directly so it stays correct across resets and idempotent reruns.
+    """
+
+    event_type = "sandbox"
+    sandbox_explorer_threshold = 20
+
+    def check(self, *, user, **_context) -> list[str]:
+        from apps.sandbox.models import SandboxQueryAttempt
+
+        attempts = SandboxQueryAttempt.objects.filter(user=user).count()
+        earned: list[str] = []
+        if attempts >= self.sandbox_explorer_threshold:
+            earned.append("sandbox_explorer")
+        return earned
+
+
 class BadgeFactory:
     """Factory Method — ``get_checker(event_type)`` dispatches to a concrete
     checker. ``all_checkers()`` returns one of each so the facade can run the
@@ -196,6 +217,7 @@ class BadgeFactory:
         "skill": SkillBadgeChecker,
         "streak": StreakBadgeChecker,
         "fun": FunBadgeChecker,
+        "sandbox": SandboxBadgeChecker,
     }
 
     @classmethod

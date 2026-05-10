@@ -80,3 +80,21 @@ def dispatch_exercise_completed(user, exercise, progress) -> dict | None:
         if isinstance(response, dict):
             return response
     return None
+
+
+def check_sandbox_badges(user) -> list[dict]:
+    """Run sandbox-only badge checkers and persist any newly-earned badges.
+
+    Returns the freshly-awarded badges (BadgeSerializer dicts) so the
+    sandbox view can surface them to the frontend for a celebration
+    toast. Pure side-effect for unawarded badges; no XP/level changes.
+    """
+    from .badges import BadgeFactory, award_badge
+    from .serializers import BadgeSerializer
+
+    awarded: list[dict] = []
+    for trigger in BadgeFactory.get_checker("sandbox").check(user=user):
+        badge = award_badge(user, trigger)
+        if badge is not None:
+            awarded.append(BadgeSerializer(badge).data)
+    return awarded
