@@ -9,4 +9,5 @@ urlpatterns = [
     path("api/", include("apps.sandbox.urls")),
     path("api/", include("apps.gamification.urls")),
     path("api/", include("apps.mentor.urls")),
+    path("api/admin/", include("apps.admin_api.urls")),
 ]

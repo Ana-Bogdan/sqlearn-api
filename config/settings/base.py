@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "apps.progress",
     "apps.gamification",
     "apps.mentor",
+    "apps.admin_api",
 ]
 
 MIDDLEWARE = [
