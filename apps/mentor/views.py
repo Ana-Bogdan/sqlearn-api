@@ -81,7 +81,12 @@ class ExplainErrorView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        exercise = _resolve_exercise(data["exercise_id"])
+        # When the FE supplies an exercise_id we use it; otherwise this is
+        # the free-sandbox flow and we hand ``exercise=None`` to the service.
+        exercise = None
+        exercise_id = data.get("exercise_id")
+        if exercise_id is not None:
+            exercise = _resolve_exercise(exercise_id)
 
         try:
             result = mentor_service.explain_error(

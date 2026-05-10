@@ -77,20 +77,30 @@ class AIMentorService:
     ) -> dict:
         self._enforce_rate_limit(user, MentorRequestKind.EXPLAIN_ERROR)
 
-        strategy = ExplainErrorStrategy(
-            ExplainErrorContext(
+        # When called from a lesson we have the exercise's full context;
+        # when called from the free Sandbox we fall back to the playground
+        # schema so the model still has something concrete to reason about.
+        if exercise is not None:
+            context = ExplainErrorContext(
                 exercise_title=exercise.title,
                 exercise_instructions=exercise.instructions,
                 user_sql=user_sql,
                 error_message=error_message,
                 history=history or [],
             )
-        )
+        else:
+            context = ExplainErrorContext(
+                schema_description=schema_for_playground(),
+                user_sql=user_sql,
+                error_message=error_message,
+                history=history or [],
+            )
+
         return self._run(
             user=user,
             kind=MentorRequestKind.EXPLAIN_ERROR,
             exercise=exercise,
-            strategy=strategy,
+            strategy=ExplainErrorStrategy(context),
         )
 
     def get_hint(

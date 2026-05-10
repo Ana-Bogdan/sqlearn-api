@@ -1,9 +1,11 @@
 """Strategy for the *Explain Error* request.
 
 Triggered when a learner's submission failed (PostgreSQL syntax error,
-runtime error, wrong-result diff). The model receives the exercise context,
-the learner's SQL, and the error/diff message, and must explain *why* the
-query failed in pedagogical terms — without writing the corrected query.
+runtime error, wrong-result diff). The model receives the surrounding
+context (the exercise prompt when there is one, otherwise the playground
+schema), the learner's SQL, and the error/diff message, and must explain
+*why* the query failed in pedagogical terms — without writing the
+corrected query.
 """
 
 from __future__ import annotations
@@ -15,10 +17,13 @@ from .base import BuiltPrompt, ChatMessage, PromptStrategy, TUTOR_PERSONA
 
 @dataclass(frozen=True)
 class ExplainErrorContext:
-    exercise_title: str
-    exercise_instructions: str
     user_sql: str
     error_message: str
+    # Either the exercise the learner is on (preferred) ...
+    exercise_title: str = ""
+    exercise_instructions: str = ""
+    # ... or the playground schema description for free-sandbox failures.
+    schema_description: str = ""
     history: list[ChatMessage] = field(default_factory=list)
 
 
@@ -31,18 +36,31 @@ class ExplainErrorStrategy(PromptStrategy):
     def build(self) -> BuiltPrompt:
         system = (
             f"{TUTOR_PERSONA}\n\n"
-            "Task: Explain a PostgreSQL error a learner got while attempting a "
-            "SQL exercise. Identify the *concept* they likely misunderstood, "
-            "not just the literal error text. Do NOT write the corrected SQL "
+            "Task: Explain a PostgreSQL error a learner got while writing "
+            "SQL. Identify the *concept* they likely misunderstood, not "
+            "just the literal error text. Do NOT write the corrected SQL "
             "— guide them toward fixing it themselves. Reference specific "
             "tokens from their query when helpful."
         )
 
         ctx = self._ctx
+        if ctx.exercise_title:
+            context_block = (
+                f"## Exercise\n"
+                f"**{ctx.exercise_title}**\n\n"
+                f"{ctx.exercise_instructions}\n"
+            )
+        else:
+            schema = ctx.schema_description.strip() or "(no schema available)"
+            context_block = (
+                f"## Context\n"
+                f"The learner is exploring the free-play sandbox — there's "
+                f"no specific exercise. Available tables:\n\n"
+                f"```sql\n{schema}\n```\n"
+            )
+
         user_message = (
-            f"## Exercise\n"
-            f"**{ctx.exercise_title}**\n\n"
-            f"{ctx.exercise_instructions}\n\n"
+            f"{context_block}\n"
             f"## My query\n"
             f"```sql\n{ctx.user_sql.strip()}\n```\n\n"
             f"## What PostgreSQL said\n"

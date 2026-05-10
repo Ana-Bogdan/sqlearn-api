@@ -44,7 +44,10 @@ class _BaseMentorRequestSerializer(serializers.Serializer):
 
 
 class ExplainErrorRequestSerializer(_BaseMentorRequestSerializer):
-    exercise_id = serializers.IntegerField()
+    # Optional: when present we use the exercise's title/instructions/dataset
+    # for richer context; when omitted (free-sandbox flow) we explain against
+    # the playground schema.
+    exercise_id = serializers.IntegerField(required=False, allow_null=True)
     sql_text = serializers.CharField(max_length=10_000, allow_blank=False)
     error_message = serializers.CharField(max_length=4_000, allow_blank=False)
 
