@@ -8,11 +8,14 @@ Idempotent: re-running updates progress in place. Pass ``--reset`` to wipe the
 user's existing progress for the chapter first (useful when re-testing the
 quiz from a clean slate).
 
-Examples::
+Examples (run from the host against the running docker stack)::
 
-    python manage.py seed_test_user
-    python manage.py seed_test_user --chapter 2
-    python manage.py seed_test_user --email me@example.com --password hunter2 --reset
+    docker exec sqlearn-api-api-1 python manage.py seed_test_user
+    docker exec sqlearn-api-api-1 python manage.py seed_test_user --chapter 2
+    docker exec sqlearn-api-api-1 python manage.py seed_test_user --email ana+quiztest@example.com --password 'Qweqwe123*' --reset
+
+Quote the password if it contains shell metacharacters (``*``, ``?``, ``$``,
+etc.) — zsh expands them as globs before the command runs.
 """
 
 from __future__ import annotations
