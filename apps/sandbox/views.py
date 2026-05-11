@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.curriculum.models import Exercise
+from apps.curriculum.models import Exercise, Lesson
 from apps.gamification.signals import (
     check_sandbox_badges,
     dispatch_exercise_completed,
@@ -34,6 +34,44 @@ from .services import (
 )
 
 
+def _exercise_lock_reason(user, exercise: Exercise) -> str | None:
+    """Return a human-readable reason if this exercise is locked for this user.
+
+    Mirrors the chapter-detail serializer logic so the rule lives in one place
+    semantically: lesson exercises require all earlier lessons in the chapter
+    to be complete; chapter quizzes require *every* lesson complete.
+    """
+    if exercise.lesson_id is not None and not exercise.is_chapter_quiz:
+        prior_lessons = (
+            Lesson.objects.filter(
+                chapter_id=exercise.chapter_id, is_active=True
+            )
+            .filter(order__lt=exercise.lesson.order)
+            .with_user_progress(user)
+        )
+        if any(not bool(l.is_completed) for l in prior_lessons):
+            return (
+                "Finish the previous lesson before tackling this one."
+            )
+        return None
+
+    if exercise.is_chapter_quiz:
+        lessons = (
+            Lesson.objects.filter(
+                chapter_id=exercise.chapter_id, is_active=True
+            )
+            .with_user_progress(user)
+        )
+        if not lessons.exists():
+            return None
+        if any(not bool(l.is_completed) for l in lessons):
+            return (
+                "Complete every lesson in this chapter to unlock the quiz."
+            )
+
+    return None
+
+
 class ExerciseSubmitView(APIView):
     """Run a submitted SQL query through the validation pipeline.
 
@@ -54,6 +92,25 @@ class ExerciseSubmitView(APIView):
             Exercise.objects.visible().select_related("chapter"), pk=pk
         )
         user = request.user
+
+        # Enforce sequential progression: a learner can't submit against a
+        # lesson exercise whose lesson is locked, nor a chapter quiz before
+        # every lesson in the chapter is finished. Admins/staff bypass this
+        # so they can validate authored content end-to-end.
+        if not user.is_staff:
+            lock_message = _exercise_lock_reason(user, exercise)
+            if lock_message is not None:
+                return Response(
+                    {
+                        "status": "forbidden",
+                        "message": lock_message,
+                        "user_status": ExerciseStatus.NOT_STARTED,
+                        "was_first_attempt": False,
+                        "submission_count": 0,
+                        "gamification": None,
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
         sandbox_schemas = [
             link.sandbox_schema

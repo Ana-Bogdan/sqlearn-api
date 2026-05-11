@@ -27,6 +27,7 @@ class LessonListSerializer(serializers.ModelSerializer):
     total_exercises = serializers.IntegerField(read_only=True)
     completed_exercises = serializers.IntegerField(read_only=True)
     is_completed = serializers.BooleanField(read_only=True)
+    is_locked = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -38,7 +39,11 @@ class LessonListSerializer(serializers.ModelSerializer):
             "total_exercises",
             "completed_exercises",
             "is_completed",
+            "is_locked",
         )
+
+    def get_is_locked(self, lesson: Lesson) -> bool:
+        return bool(getattr(lesson, "is_locked", False))
 
 
 class ChapterDetailSerializer(ChapterListSerializer):
@@ -53,23 +58,46 @@ class ChapterDetailSerializer(ChapterListSerializer):
         return getattr(request, "user", None) if request else None
 
     def get_lessons(self, chapter: Chapter):
-        qs = (
+        qs = list(
             Lesson.objects.filter(chapter=chapter, is_active=True)
             .with_user_progress(self._user())
             .order_by("order")
         )
+        # A lesson unlocks once every preceding lesson in the chapter is
+        # complete. The first lesson is always unlocked. Locking is purely
+        # learner-progression UX — admins/staff bypass it on the client side
+        # by simply not showing a lock chip when irrelevant.
+        previous_done = True
+        for lesson in qs:
+            lesson.is_locked = not previous_done
+            previous_done = previous_done and bool(lesson.is_completed)
         return LessonListSerializer(qs, many=True, context=self.context).data
 
     def get_chapter_quizzes(self, chapter: Chapter):
-        qs = (
-            Exercise.objects.for_chapter(chapter.id)
-            .with_user_status(self._user())
+        user = self._user()
+        # Quizzes unlock once every lesson in the chapter is completed.
+        lessons = (
+            Lesson.objects.filter(chapter=chapter, is_active=True)
+            .with_user_progress(user)
         )
+        all_lessons_done = (
+            user is not None
+            and user.is_authenticated
+            and lessons.exists()
+            and all(bool(l.is_completed) for l in lessons)
+        )
+
+        qs = list(
+            Exercise.objects.for_chapter(chapter.id).with_user_status(user)
+        )
+        for exercise in qs:
+            exercise.is_locked = not all_lessons_done
         return ExerciseSummarySerializer(qs, many=True, context=self.context).data
 
 
 class ExerciseSummarySerializer(serializers.ModelSerializer):
     user_status = serializers.CharField(read_only=True, default=ExerciseStatus.NOT_STARTED)
+    is_locked = serializers.SerializerMethodField()
 
     class Meta:
         model = Exercise
@@ -80,7 +108,11 @@ class ExerciseSummarySerializer(serializers.ModelSerializer):
             "order",
             "is_chapter_quiz",
             "user_status",
+            "is_locked",
         )
+
+    def get_is_locked(self, exercise: Exercise) -> bool:
+        return bool(getattr(exercise, "is_locked", False))
 
 
 class LessonDetailSerializer(LessonListSerializer):
