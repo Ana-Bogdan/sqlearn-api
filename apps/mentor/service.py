@@ -121,7 +121,7 @@ class AIMentorService:
                 f"Already used {used}/{cap} AI hints for this exercise."
             )
 
-        next_level = used + 1  # 1, 2, or 3
+        next_level = used + 1
         strategy = HintStrategy(
             HintContext(
                 exercise_title=exercise.title,
