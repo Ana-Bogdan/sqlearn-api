@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.curriculum.models import Chapter, Exercise, Lesson
+from apps.users.models import UserRole
 from apps.progress.models import (
     ExerciseStatus,
     UserExerciseProgress,
@@ -45,6 +46,7 @@ class LeaderboardView(APIView):
     def get(self, request):
         qs = (
             User.objects.filter(is_active=True)
+            .exclude(role=UserRole.ADMIN)
             .annotate(
                 badge_count=Count("user_badges", distinct=True),
             )
@@ -93,9 +95,12 @@ class LeaderboardView(APIView):
 
 
 def _rank_for_user(user) -> int:
-    higher = User.objects.filter(is_active=True).filter(
-        Q(xp__gt=user.xp) | Q(xp=user.xp, id__lt=user.id)
-    ).count()
+    higher = (
+        User.objects.filter(is_active=True)
+        .exclude(role=UserRole.ADMIN)
+        .filter(Q(xp__gt=user.xp) | Q(xp=user.xp, id__lt=user.id))
+        .count()
+    )
     return higher + 1
 
 
