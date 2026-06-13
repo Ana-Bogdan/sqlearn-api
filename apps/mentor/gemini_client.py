@@ -62,8 +62,6 @@ class GeminiClient:
             max_workers=4, thread_name_prefix="mentor-gemini"
         )
 
-    # -- public API -------------------------------------------------------
-
     def generate(self, prompt: BuiltPrompt, *, model: str | None = None) -> GeminiResponse:
         """Send the prompt to Gemini and return the response.
 
@@ -86,8 +84,6 @@ class GeminiClient:
             raise GeminiTimeout(
                 f"Gemini call exceeded {timeout}s deadline"
             ) from exc
-
-    # -- internals --------------------------------------------------------
 
     def _ensure_client(self):
         if self._client is not None:

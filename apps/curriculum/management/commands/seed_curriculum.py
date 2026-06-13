@@ -23,10 +23,6 @@ from apps.curriculum.models import (
 from apps.sandbox.models import ExerciseDataset, SandboxSchema
 
 
-# ---------------------------------------------------------------------------
-# Dataset definitions
-# ---------------------------------------------------------------------------
-
 STUDENTS_SCHEMA_SQL = """
 CREATE TABLE students (
     id      INTEGER PRIMARY KEY,
@@ -304,11 +300,6 @@ SCHEMAS: list[dict[str, Any]] = [
 ]
 
 
-# ---------------------------------------------------------------------------
-# Curriculum structures
-# ---------------------------------------------------------------------------
-
-
 @dataclass
 class ExerciseSpec:
     order: int
@@ -343,10 +334,6 @@ class ChapterSpec:
 def _result(columns: list[str], rows: list[list[Any]], *, ordered: bool = False) -> dict[str, Any]:
     return {"columns": columns, "rows": rows, "order_matters": ordered}
 
-
-# ---------------------------------------------------------------------------
-# Chapter 1 — Getting Started with Data
-# ---------------------------------------------------------------------------
 
 CH1 = ChapterSpec(
     order=1,
@@ -692,10 +679,6 @@ CH1 = ChapterSpec(
     ),
 )
 
-
-# ---------------------------------------------------------------------------
-# Chapter 2 — Filtering & Sorting
-# ---------------------------------------------------------------------------
 
 CH2 = ChapterSpec(
     order=2,
@@ -1085,10 +1068,6 @@ CH2 = ChapterSpec(
 )
 
 
-# ---------------------------------------------------------------------------
-# Chapter 3 — Working with Functions
-# ---------------------------------------------------------------------------
-
 CH3 = ChapterSpec(
     order=3,
     title="Working with Functions",
@@ -1437,10 +1416,6 @@ CH3 = ChapterSpec(
     ),
 )
 
-
-# ---------------------------------------------------------------------------
-# Chapter 4 — Shaping Your Results
-# ---------------------------------------------------------------------------
 
 CH4 = ChapterSpec(
     order=4,
@@ -1846,10 +1821,6 @@ CH4 = ChapterSpec(
 )
 
 
-# ---------------------------------------------------------------------------
-# Chapter 5 — Combining Tables
-# ---------------------------------------------------------------------------
-
 CH5 = ChapterSpec(
     order=5,
     title="Combining Tables",
@@ -2240,10 +2211,6 @@ CH5 = ChapterSpec(
 )
 
 
-# ---------------------------------------------------------------------------
-# Chapter 6 — Subqueries
-# ---------------------------------------------------------------------------
-
 CH6 = ChapterSpec(
     order=6,
     title="Subqueries",
@@ -2592,14 +2559,9 @@ CH6 = ChapterSpec(
 )
 
 
-# ---------------------------------------------------------------------------
-# Chapter 7 — Modifying Data
-# ---------------------------------------------------------------------------
-# Chapter 7 is the first chapter where non-SELECT statements are permitted
-# by ``ForbiddenOperationHandler``. Every write exercise uses ``RETURNING`` so
-# the result comparator has columns/rows to match against.
-# ---------------------------------------------------------------------------
-
+# Chapter 7 is the first chapter where non-SELECT statements are permitted by
+# ForbiddenOperationHandler. Every write exercise uses RETURNING so the result
+# comparator has columns/rows to match against.
 CH7 = ChapterSpec(
     order=7,
     title="Modifying Data",
@@ -2989,10 +2951,6 @@ CH7 = ChapterSpec(
     ),
 )
 
-
-# ---------------------------------------------------------------------------
-# Chapter 8 — Advanced Queries
-# ---------------------------------------------------------------------------
 
 CH8 = ChapterSpec(
     order=8,
@@ -3391,11 +3349,6 @@ CH8 = ChapterSpec(
 )
 
 
-# ---------------------------------------------------------------------------
-# Upsert helpers
-# ---------------------------------------------------------------------------
-
-
 def _upsert_schema(spec: dict[str, Any]) -> SandboxSchema:
     schema, _ = SandboxSchema.objects.update_or_create(
         name=spec["name"],
@@ -3473,11 +3426,6 @@ def _upsert_exercise(
         )
 
     return exercise
-
-
-# ---------------------------------------------------------------------------
-# Command entry point
-# ---------------------------------------------------------------------------
 
 
 class Command(BaseCommand):

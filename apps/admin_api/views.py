@@ -55,11 +55,6 @@ from .serializers import (
 User = get_user_model()
 
 
-# ---------------------------------------------------------------------------
-# Chapters
-# ---------------------------------------------------------------------------
-
-
 class AdminChapterListCreateView(generics.ListCreateAPIView):
     """``GET/POST /api/admin/chapters/``.
 
@@ -122,11 +117,6 @@ class AdminChapterReorderView(APIView):
         return Response(AdminChapterSerializer(chapter).data)
 
 
-# ---------------------------------------------------------------------------
-# Lessons
-# ---------------------------------------------------------------------------
-
-
 class AdminLessonCreateView(generics.CreateAPIView):
     """``POST /api/admin/lessons/``."""
 
@@ -145,11 +135,6 @@ class AdminLessonDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance: Lesson) -> None:
         instance.is_active = False
         instance.save(update_fields=["is_active", "updated_at"])
-
-
-# ---------------------------------------------------------------------------
-# Exercises
-# ---------------------------------------------------------------------------
 
 
 class AdminExerciseCreateView(generics.CreateAPIView):
@@ -231,11 +216,6 @@ class AdminExerciseTestSolutionView(APIView):
         return Response(TestSolutionResultSerializer(result).data)
 
 
-# ---------------------------------------------------------------------------
-# Datasets (sandbox schemas)
-# ---------------------------------------------------------------------------
-
-
 class AdminDatasetListCreateView(generics.ListCreateAPIView):
     """``GET/POST /api/admin/datasets/``."""
 
@@ -272,11 +252,6 @@ class AdminDatasetDetailView(generics.RetrieveUpdateDestroyAPIView):
         return super().destroy(request, *args, **kwargs)
 
 
-# ---------------------------------------------------------------------------
-# Badges
-# ---------------------------------------------------------------------------
-
-
 class AdminBadgeDetailView(generics.RetrieveUpdateAPIView):
     """``GET/PUT/PATCH /api/admin/badges/{id}/`` — display fields only."""
 
@@ -292,11 +267,6 @@ class AdminBadgeListView(generics.ListAPIView):
     serializer_class = AdminBadgeSerializer
     queryset = Badge.objects.all().order_by("category", "id")
     pagination_class = None
-
-
-# ---------------------------------------------------------------------------
-# Users
-# ---------------------------------------------------------------------------
 
 
 class AdminUserListView(generics.ListAPIView):
@@ -331,11 +301,6 @@ class AdminUserDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = AdminUserSerializer
     queryset = User.objects.all()
     http_method_names = ["get", "patch", "head", "options"]
-
-
-# ---------------------------------------------------------------------------
-# Stats
-# ---------------------------------------------------------------------------
 
 
 class AdminStatsView(APIView):

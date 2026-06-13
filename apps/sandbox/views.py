@@ -174,10 +174,6 @@ class ExerciseSubmitView(APIView):
         return Response(response)
 
 
-# ---------------------------------------------------------------------------
-# Free Sandbox (Milestone 18)
-# ---------------------------------------------------------------------------
-
 # DDL is forbidden in the playground so the schema browser stays in sync with
 # the seeded shape. Writes (INSERT/UPDATE/DELETE) are allowed — that's the
 # whole point of free play.

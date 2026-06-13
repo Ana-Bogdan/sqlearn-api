@@ -207,16 +207,13 @@ class AdminMentorLogsViewTests(_BaseFixture):
         url = reverse("admin-mentor-logs")
         self.client.force_authenticate(self.admin)
 
-        # No filter: both rows
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertEqual(resp.json()["count"], 2)
 
-        # Filter by kind
         resp = self.client.get(url, {"kind": "hint"})
         self.assertEqual(resp.json()["count"], 1)
         self.assertEqual(resp.json()["results"][0]["kind"], "hint")
 
-        # Filter by outcome
         resp = self.client.get(url, {"outcome": "gemini_error"})
         self.assertEqual(resp.json()["count"], 1)

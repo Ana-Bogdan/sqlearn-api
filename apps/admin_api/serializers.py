@@ -17,11 +17,6 @@ from apps.sandbox.models import ExerciseDataset, SandboxSchema
 User = get_user_model()
 
 
-# ---------------------------------------------------------------------------
-# Chapters
-# ---------------------------------------------------------------------------
-
-
 class AdminChapterLessonSummarySerializer(serializers.ModelSerializer):
     """Lightweight lesson representation nested under a chapter."""
 
@@ -79,11 +74,6 @@ class AdminChapterReorderSerializer(serializers.Serializer):
     order = serializers.IntegerField(min_value=0)
 
 
-# ---------------------------------------------------------------------------
-# Lessons
-# ---------------------------------------------------------------------------
-
-
 class AdminLessonExerciseSummarySerializer(serializers.ModelSerializer):
     """Lightweight exercise representation nested under a lesson."""
 
@@ -128,11 +118,6 @@ class AdminLessonSerializer(serializers.ModelSerializer):
     def get_exercises(self, lesson: Lesson) -> list[dict]:
         exercises = lesson.exercises.all().order_by("order", "id")
         return AdminLessonExerciseSummarySerializer(exercises, many=True).data
-
-
-# ---------------------------------------------------------------------------
-# Exercises
-# ---------------------------------------------------------------------------
 
 
 class AdminExerciseHintSerializer(serializers.ModelSerializer):
@@ -279,11 +264,6 @@ class TestSolutionResultSerializer(serializers.Serializer):
     rowcount = serializers.IntegerField()
 
 
-# ---------------------------------------------------------------------------
-# Datasets (sandbox schemas)
-# ---------------------------------------------------------------------------
-
-
 class AdminSandboxSchemaSerializer(serializers.ModelSerializer):
     exercise_count = serializers.SerializerMethodField()
 
@@ -304,11 +284,6 @@ class AdminSandboxSchemaSerializer(serializers.ModelSerializer):
         return schema.exercise_datasets.count()
 
 
-# ---------------------------------------------------------------------------
-# Badges
-# ---------------------------------------------------------------------------
-
-
 class AdminBadgeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Badge
@@ -316,11 +291,6 @@ class AdminBadgeSerializer(serializers.ModelSerializer):
         # Trigger type and category drive backend logic, so admins can only
         # tweak display text (per spec: "edit display only").
         read_only_fields = ("id", "trigger_type", "category")
-
-
-# ---------------------------------------------------------------------------
-# Users
-# ---------------------------------------------------------------------------
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
@@ -353,11 +323,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-
-
-# ---------------------------------------------------------------------------
-# Stats
-# ---------------------------------------------------------------------------
 
 
 class AdminExerciseStatRow(serializers.Serializer):

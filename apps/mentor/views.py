@@ -157,11 +157,6 @@ class NLToSQLView(APIView):
         return Response(MentorResponseSerializer(result).data)
 
 
-# ---------------------------------------------------------------------------
-# Admin
-# ---------------------------------------------------------------------------
-
-
 class MentorLogsPagination(pagination.PageNumberPagination):
     page_size = 25
     page_size_query_param = "page_size"

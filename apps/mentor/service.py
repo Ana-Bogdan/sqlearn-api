@@ -62,10 +62,6 @@ class AIMentorService:
         # its own once.
         self._gemini = gemini_client or GeminiClient()
 
-    # =====================================================================
-    # Public API — one method per request kind
-    # =====================================================================
-
     def explain_error(
         self,
         *,
@@ -179,10 +175,6 @@ class AIMentorService:
             strategy=strategy,
         )
 
-    # =====================================================================
-    # Internals
-    # =====================================================================
-
     def _run(
         self,
         *,
@@ -237,8 +229,6 @@ class AIMentorService:
             "latency_ms": latency_ms,
         }
 
-    # -- throttling -------------------------------------------------------
-
     def _enforce_rate_limit(self, user, kind: MentorRequestKind) -> None:
         cap = settings.AI_MENTOR_RATE_LIMIT_PER_HOUR
         window_start = timezone.now() - timedelta(hours=1)
@@ -284,8 +274,6 @@ class AIMentorService:
             kind=MentorRequestKind.HINT,
             outcome=MentorRequestOutcome.SUCCESS,
         ).count()
-
-    # -- logging + fallback ----------------------------------------------
 
     def _log(
         self,
@@ -335,9 +323,6 @@ class AIMentorService:
         return int((time.monotonic() - started) * 1000)
 
 
-# =========================================================================
-# Module-level singleton — Pythonic Singleton pattern.
-# Importing ``mentor_service`` from any module in the codebase yields the
+# Module-level singleton: importing ``mentor_service`` anywhere yields the
 # same instance because Python only initialises a module's globals once.
-# =========================================================================
 mentor_service = AIMentorService()

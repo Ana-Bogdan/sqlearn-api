@@ -54,14 +54,10 @@ class SandboxService:
     def playground_schema_name(self, user_id) -> str:
         return playground_schema_name(user_id)
 
-    # -- exercise (per-submission) schema -------------------------------
-
     def prepare_exercise_schema(
         self, user_id, sandbox_schemas: Iterable[SandboxSchema]
     ) -> str:
         return self._reset_schema(self.schema_name(user_id), sandbox_schemas)
-
-    # -- playground schema ----------------------------------------------
 
     def get_or_create_playground(self, user_id) -> tuple[str, SandboxSchema]:
         """Return ``(schema_name, playground_template)`` for this user.
@@ -123,8 +119,6 @@ class SandboxService:
             TableInfo(name=t, row_count=row_counts.get(t, 0), columns=cols)
             for t, cols in sorted(tables.items())
         ]
-
-    # -- shared helpers --------------------------------------------------
 
     def drop_user_schema(self, user_id) -> None:
         for name in (self.schema_name(user_id), self.playground_schema_name(user_id)):

@@ -25,8 +25,6 @@ def _stub_response(text="ok"):
 
 
 def _stub_models_with_side_effect(side_effect):
-    """Build a stand-in for ``client.models`` whose generate_content does X."""
-
     models = MagicMock()
     models.generate_content.side_effect = side_effect
     return models

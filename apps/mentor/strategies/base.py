@@ -59,8 +59,6 @@ class PromptStrategy(ABC):
     def build(self) -> BuiltPrompt:
         """Return the system instruction, history, and final user message."""
 
-    # -- helpers shared by concrete strategies ----------------------------
-
     @staticmethod
     def _format_history(history: list[ChatMessage] | None) -> list[ChatMessage]:
         """Defensive copy + filter so strategies can't mutate caller state."""

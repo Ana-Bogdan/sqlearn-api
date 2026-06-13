@@ -12,11 +12,6 @@ from rest_framework import serializers
 from .strategies import ChatMessage, ChatRole
 
 
-# ---------------------------------------------------------------------------
-# Inbound
-# ---------------------------------------------------------------------------
-
-
 class ChatMessageSerializer(serializers.Serializer):
     """One turn of conversational memory passed in by the FE."""
 
@@ -66,11 +61,6 @@ class NLToSQLRequestSerializer(_BaseMentorRequestSerializer):
     exercise_id = serializers.IntegerField(required=False, allow_null=True)
 
 
-# ---------------------------------------------------------------------------
-# Outbound
-# ---------------------------------------------------------------------------
-
-
 class MentorResponseSerializer(serializers.Serializer):
     """Uniform response shape for every mentor endpoint.
 
@@ -92,11 +82,6 @@ class MentorResponseSerializer(serializers.Serializer):
     # Failure-mode metadata (rate_limited / hint_cap_reached / gemini_error / timeout)
     outcome = serializers.CharField(required=False)
     retry_after_seconds = serializers.IntegerField(required=False)
-
-
-# ---------------------------------------------------------------------------
-# Admin
-# ---------------------------------------------------------------------------
 
 
 class AIRequestLogSerializer(serializers.Serializer):

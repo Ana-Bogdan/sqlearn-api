@@ -10,11 +10,6 @@ from .exceptions import QueryExecutionError, QuerySyntaxError, QueryTimeout
 from .execution_service import QueryExecutionService
 
 
-# ---------------------------------------------------------------------------
-# Context passed between handlers
-# ---------------------------------------------------------------------------
-
-
 @dataclass
 class SubmissionContext:
     user: Any
@@ -24,11 +19,6 @@ class SubmissionContext:
     is_correct: bool = False
     outcome: dict[str, Any] | None = None
     diagnostics: dict[str, Any] = field(default_factory=dict)
-
-
-# ---------------------------------------------------------------------------
-# Chain of Responsibility base
-# ---------------------------------------------------------------------------
 
 
 class Handler(ABC):
@@ -52,10 +42,6 @@ class Handler(ABC):
     def process(self, ctx: SubmissionContext) -> dict[str, Any] | None:
         ...
 
-
-# ---------------------------------------------------------------------------
-# Concrete handlers
-# ---------------------------------------------------------------------------
 
 _COMMENT_LINE = re.compile(r"--[^\n]*", re.MULTILINE)
 _COMMENT_BLOCK = re.compile(r"/\*.*?\*/", re.DOTALL)
@@ -195,11 +181,6 @@ class ResultComparisonHandler(Handler):
             "result": actual,
             "expected": expected,
         }
-
-
-# ---------------------------------------------------------------------------
-# Pipeline wiring
-# ---------------------------------------------------------------------------
 
 
 class QueryValidationPipeline:
